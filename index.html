@@ -448,7 +448,7 @@ function generarPDF(reg) {
   doc.setFillColor(44, 26, 14);
   doc.rect(0, 287, W, 10, 'F');
   doc.setTextColor(212,176,138); doc.setFontSize(8);
-  doc.text('La Rufina · juanfer2030.github.io/consentimiento-la-rufina', W/2, 293, {align:'center'});
+  doc.text('La Rufina · larufina.github.io/consentimiento-la-rufina', W/2, 293, {align:'center'});
 
   doc.save('consentimiento_' + (r.nombreMenor||'rufina').replace(/\s/g,'_') + '.pdf');
 }
