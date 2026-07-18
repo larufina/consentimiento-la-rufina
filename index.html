@@ -218,10 +218,10 @@ input:focus, select:focus { border-color: var(--tierra); background: #fff; }
 
   <div class="sec">
     <div class="sec-titulo"><span class="num">5</span> Firma del acudiente *</div>
-    <p style="font-size:13px;color:var(--gris);margin-bottom:1rem;">Dibuje su firma con el dedo o el mouse.</p>
+    <p style="font-size:13px;color:var(--gris);margin-bottom:1rem;">Deslice el dedo (o el mouse) dentro del recuadro para dibujar su firma, sin levantarlo hasta terminar.</p>
     <div class="firma-wrap">
       <canvas id="canvas-firma"></canvas>
-      <div class="firma-hint" id="firma-hint">Toque aquí para firmar</div>
+      <div class="firma-hint" id="firma-hint">Deslice el dedo aquí para firmar</div>
     </div>
     <div class="firma-btns"><button class="btn-limpiar" onclick="limpiarFirma()">🗑 Limpiar</button></div>
     <p style="font-size:12px;color:var(--gris);text-align:center;margin-top:0.75rem;border-top:1px solid var(--borde);padding-top:0.75rem;">📍 Envigado, Antioquia — La Rufina, Vda. El Peñasco</p>
@@ -297,7 +297,11 @@ canvas.addEventListener('touchstart', function(e) { e.preventDefault(); drawing=
 canvas.addEventListener('touchmove', function(e) { e.preventDefault(); if(!drawing)return; var p=xy(e); ctx.lineTo(p[0],p[1]); ctx.stroke(); firmaVacia=false; }, {passive:false});
 canvas.addEventListener('touchend', function() { drawing=false; });
 
-function limpiarFirma() { initCanvas(); firmaVacia=true; document.getElementById('firma-hint').style.display=''; }
+function limpiarFirma() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  firmaVacia = true;
+  document.getElementById('firma-hint').style.display = '';
+}
 
 // ── ENVIAR ────────────────────────────────────────────────────────
 function enviar() {
