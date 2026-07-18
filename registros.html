@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registros — La Rufina</title>
+<link rel="icon" type="image/png" href="logo/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cafe: #2c1a0e;
+  --cafe2: #4a2f1a;
+  --tierra: #c17f3a;
+  --crema: #fdf8f2;
+  --suave: #f5ede0;
+  --borde: #e0cdb0;
+  --texto: #1e1209;
+  --gris: #6b4f2e;
+  --error: #c0392b;
+  --ok: #4a7c3f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--crema); color: var(--texto); }
+
+.header {
+  background: linear-gradient(135deg, #2c1a0e, #3d2512);
+  color: #fff; padding: 1.5rem; text-align: center;
+  border-bottom: 4px solid var(--tierra);
+}
+.header .nit { font-size: 11px; letter-spacing: 2px; color: #e8c89a; margin-bottom: 0.4rem; }
+.header h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; }
+.header p { font-size: 13px; color: #d4b08a; margin-top: 0.3rem; }
+
+.wrap { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1.25rem; }
+
+.sec { background: #fff; border: 1px solid var(--borde); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.25rem; }
+
+/* ── PANTALLA DE CLAVE ─────────────────────────────────────────── */
+.gate { max-width: 380px; margin: 3rem auto; text-align: center; }
+.gate h2 { font-family: 'Playfair Display', serif; color: var(--cafe); margin-bottom: 0.5rem; }
+.gate p { font-size: 13px; color: var(--gris); margin-bottom: 1.25rem; }
+.gate input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--borde); border-radius: 6px;
+  font-size: 16px; margin-bottom: 0.75rem; background: var(--suave); text-align: center;
+}
+.gate button {
+  width: 100%; padding: 12px; background: var(--cafe); color: #fff; border: none;
+  border-radius: 6px; font-family: 'Playfair Display', serif; font-size: 1rem; cursor: pointer;
+}
+.gate .err { color: var(--error); font-size: 13px; margin-top: 0.75rem; display: none; }
+
+/* ── APP ───────────────────────────────────────────────────────── */
+#app { display: none; }
+#app.visible { display: block; }
+
+.filtros { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-bottom: 1rem; }
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-size: 11px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.5px; }
+.campo input {
+  padding: 9px 11px; border: 1px solid var(--borde); border-radius: 6px;
+  font-size: 14px; background: var(--suave); font-family: 'Inter', sans-serif;
+}
+.rapidos { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.btn-rapido {
+  padding: 8px 12px; border: 1px solid var(--borde); border-radius: 6px; background: var(--suave);
+  font-size: 12px; cursor: pointer; color: var(--gris); font-family: 'Inter', sans-serif;
+}
+.btn-rapido.on { background: var(--cafe); border-color: var(--cafe); color: #fff; }
+
+.acciones-top { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.btn { padding: 9px 16px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 500; }
+.btn-cafe { background: var(--cafe); color: #fff; }
+.btn-borde { background: #fff; color: var(--cafe); border: 1px solid var(--borde); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.stats { font-size: 13px; color: var(--gris); margin-bottom: 0.75rem; }
+
+.tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--borde); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { background: var(--cafe); color: #e8c89a; padding: 9px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--suave); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 500; }
+.badge.si { background: #d4edda; color: #155724; }
+.badge.no { background: #f8d7da; color: #721c24; }
+.btn-pdf-fila { padding: 5px 11px; background: #c0392b; color: #fff; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; }
+.btn-pdf-fila:disabled { opacity: 0.5; cursor: wait; }
+.vacio { text-align: center; padding: 2.5rem; color: var(--gris); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="nit">LRFN FREEDOM CHASERS S.A.S. · NIT 901361323-0 · Vda. El Peñasco, Envigado</div>
+  <h1>La Rufina</h1>
+  <p>Registros de consentimientos — uso interno</p>
+</div>
+
+<div class="wrap">
+
+  <!-- PANTALLA DE CLAVE -->
+  <div class="sec gate" id="gate">
+    <h2>Acceso restringido</h2>
+    <p>Ingresa la clave de la empresa para ver los registros.</p>
+    <input type="password" id="clave" placeholder="Clave" onkeydown="if(event.key==='Enter')entrar()">
+    <button onclick="entrar()">Entrar</button>
+    <p class="err" id="clave-err">Clave incorrecta.</p>
+  </div>
+
+  <!-- APP -->
+  <div id="app">
+    <div class="sec">
+      <div class="filtros">
+        <div class="campo"><label>Desde</label><input type="date" id="f-desde"></div>
+        <div class="campo"><label>Hasta</label><input type="date" id="f-hasta"></div>
+        <div class="campo" style="flex:1;min-width:180px;"><label>Buscar</label><input type="text" id="f-texto" placeholder="Nombre, cédula o menor"></div>
+        <div class="rapidos">
+          <button class="btn-rapido" id="btn-hoy" onclick="filtroRapido('hoy')">Hoy</button>
+          <button class="btn-rapido" id="btn-ayer" onclick="filtroRapido('ayer')">Ayer</button>
+          <button class="btn-rapido" id="btn-todos" onclick="filtroRapido('todos')">Todos</button>
+        </div>
+      </div>
+      <div class="acciones-top">
+        <button class="btn btn-cafe" onclick="cargarDatos()">🔄 Actualizar</button>
+        <button class="btn btn-borde" id="btn-pdf-todos" onclick="descargarTodosFiltrados()">📄 Descargar PDF de los filtrados</button>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Acudiente</th><th>Documento</th><th>Teléfono</th><th>Menor</th><th>Edad</th><th>Firma</th><th>PDF</th></tr></thead>
+          <tbody id="tbody"><tr><td colspan="8" class="vacio">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2_KMf62ASIeywNQ9ezX6XCMn58D0uaZ_I8Ju9eX7YlUHAp-Q7PbLSjHEx24XbmSU/exec';
+var MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var CLAVE = 'Rufina2026';
+var todos = [];
+var filtrados = [];
+
+function entrar() {
+  var v = document.getElementById('clave').value.trim();
+  if (!v) return;
+  CLAVE = v;
+  document.getElementById('clave-err').style.display = 'none';
+  cargarDatos();
+}
+
+function cargarDatos() {
+  fetch(SCRIPT_URL + '?accion=listar&clave=' + encodeURIComponent(CLAVE) + '&_=' + Date.now(), { cache: 'no-store' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.ok || !Array.isArray(data.registros)) {
+        mostrarErrorGate(!data.ok ? (data.error || 'Clave incorrecta.') : 'Respuesta inesperada del servidor. Verifica que el Apps Script esté implementado con la última versión del código.');
+        return;
+      }
+      todos = data.registros.map(function(r) {
+        r.fechaObj = fechaDeRegistro(r);
+        return r;
+      });
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      aplicarFiltros();
+    })
+    .catch(function() {
+      mostrarErrorGate('No se pudo conectar con el Apps Script. Revisa tu conexión o la URL configurada.');
+    });
+}
+
+function mostrarErrorGate(msg) {
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('gate').style.display = 'block';
+  document.getElementById('clave-err').textContent = msg;
+  document.getElementById('clave-err').style.display = 'block';
+}
+
+function fechaDeRegistro(r) {
+  var mesIdx = MESES_ES.indexOf(r.mes);
+  var d = new Date(Number(r.anio), mesIdx >= 0 ? mesIdx : 0, Number(r.dia));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function filtroRapido(cual) {
+  document.querySelectorAll('.btn-rapido').forEach(function(b) { b.classList.remove('on'); });
+  var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  var f = function(d) { return d.toISOString().slice(0, 10); };
+  if (cual === 'hoy') {
+    document.getElementById('btn-hoy').classList.add('on');
+    document.getElementById('f-desde').value = f(hoy);
+    document.getElementById('f-hasta').value = f(hoy);
+  } else if (cual === 'ayer') {
+    document.getElementById('btn-ayer').classList.add('on');
+    var ayer = new Date(hoy); ayer.setDate(ayer.getDate() - 1);
+    document.getElementById('f-desde').value = f(ayer);
+    document.getElementById('f-hasta').value = f(ayer);
+  } else {
+    document.getElementById('btn-todos').classList.add('on');
+    document.getElementById('f-desde').value = '';
+    document.getElementById('f-hasta').value = '';
+  }
+  aplicarFiltros();
+}
+
+['f-desde', 'f-hasta', 'f-texto'].forEach(function(id) {
+  document.getElementById(id).addEventListener('input', function() {
+    document.querySelectorAll('.btn-rapido').forEach(function(b) { b.classList.remove('on'); });
+    aplicarFiltros();
+  });
+});
+
+function aplicarFiltros() {
+  var desde = document.getElementById('f-desde').value ? new Date(document.getElementById('f-desde').value + 'T00:00:00') : null;
+  var hasta = document.getElementById('f-hasta').value ? new Date(document.getElementById('f-hasta').value + 'T00:00:00') : null;
+  var texto = document.getElementById('f-texto').value.trim().toLowerCase();
+
+  filtrados = todos.filter(function(r) {
+    if (desde && r.fechaObj < desde) return false;
+    if (hasta && r.fechaObj > hasta) return false;
+    if (texto) {
+      var junta = (r.nombreAcudiente + ' ' + r.cedula + ' ' + r.nombreMenor).toLowerCase();
+      if (junta.indexOf(texto) === -1) return false;
+    }
+    return true;
+  });
+  filtrados.sort(function(a, b) { return b.fechaObj - a.fechaObj; });
+  renderTabla();
+}
+
+function renderTabla() {
+  document.getElementById('stats').textContent = filtrados.length + ' registro(s) encontrado(s) de ' + todos.length + ' en total.';
+  var tbody = document.getElementById('tbody');
+  if (!filtrados.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="vacio">Sin registros para este filtro.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtrados.map(function(r, i) {
+    return '<tr>' +
+      '<td style="white-space:nowrap">' + r.dia + ' ' + (r.mes || '').substring(0, 3) + ' ' + r.anio + '</td>' +
+      '<td><strong>' + r.nombreAcudiente + '</strong><br><span style="font-size:10px;color:var(--gris)">' + r.calidad + '</span></td>' +
+      '<td>' + r.tipoDoc + ' ' + r.cedula + '</td>' +
+      '<td>' + r.telefono + '</td>' +
+      '<td>' + r.nombreMenor + '</td>' +
+      '<td>' + (r.edadMenor || '-') + '</td>' +
+      '<td><span class="badge ' + (r.tieneFirma ? 'si' : 'no') + '">' + (r.tieneFirma ? 'Sí' : 'No') + '</span></td>' +
+      '<td><button class="btn-pdf-fila" onclick="descargarUno(' + i + ', this)">📄 PDF</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ── FIRMA + PDF ───────────────────────────────────────────────────
+function obtenerFirma(id) {
+  if (!id) return Promise.resolve(null);
+  return fetch(SCRIPT_URL + '?accion=firma&id=' + encodeURIComponent(id) + '&clave=' + encodeURIComponent(CLAVE))
+    .then(function(r) { return r.json(); })
+    .then(function(data) { return data.ok ? data.firma : null; })
+    .catch(function() { return null; });
+}
+
+function generarPDF(r, firmaImg) {
+  var doc = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+  var W = 210, mg = 20, y = 20;
+
+  doc.setFillColor(44, 26, 14);
+  doc.rect(0, 0, W, 35, 'F');
+  doc.setTextColor(232, 200, 154);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.text('LRFN FREEDOM CHASERS S.A.S. · NIT 901361323-0 · Vda. El Peñasco, Envigado', W / 2, 12, { align: 'center' });
+  doc.setFontSize(20); doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('La Rufina', W / 2, 22, { align: 'center' });
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.setTextColor(212, 176, 138);
+  doc.text('Consentimiento informado — uso de bicicletas y espacios', W / 2, 30, { align: 'center' });
+
+  y = 45;
+  doc.setDrawColor(193, 127, 58);
+  doc.setLineWidth(0.5);
+  doc.line(mg, y, W - mg, y);
+  y += 8;
+
+  doc.setTextColor(44, 26, 14); doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+  doc.text('DATOS DEL ACUDIENTE', mg, y); y += 7;
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 18, 9);
+  [
+    ['Calidad:', r.calidad],
+    ['Nombre:', r.nombreAcudiente],
+    ['Documento:', r.tipoDoc + ' ' + r.cedula],
+    ['Teléfono:', r.telefono],
+    ['Fecha:', r.dia + ' de ' + r.mes + ' de ' + r.anio]
+  ].forEach(function(c) {
+    doc.setFont('helvetica', 'bold'); doc.text(c[0], mg, y);
+    doc.setFont('helvetica', 'normal'); doc.text(c[1] || '-', mg + 35, y);
+    y += 6;
+  });
+
+  y += 4;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(44, 26, 14);
+  doc.text('DATOS DEL MENOR', mg, y); y += 7;
+  doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 18, 9);
+  [['Nombre:', r.nombreMenor], ['Edad:', r.edadMenor || '-'], ['Fecha visita:', r.fechaVisita || '-']].forEach(function(c) {
+    doc.setFont('helvetica', 'bold'); doc.text(c[0], mg, y);
+    doc.setFont('helvetica', 'normal'); doc.text(c[1] || '-', mg + 35, y);
+    y += 6;
+  });
+
+  y += 4;
+  doc.line(mg, y, W - mg, y); y += 6;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(44, 26, 14);
+  doc.text('CLÁUSULAS DEL CONSENTIMIENTO', mg, y); y += 7;
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(58, 37, 16);
+  [
+    '1. He sido informado(a) suficientemente sobre las características de la actividad recreativa.',
+    '2. Conozco y acepto los riesgos inherentes al uso de bicicletas eléctricas.',
+    '3. Declaro no tener contraindicaciones médicas para participar en esta actividad.',
+    '4. Me comprometo a no exponerme a riesgos innecesarios durante la actividad.',
+    '5. AUTORIZO al menor a usar bicicletas y espacios dentro de LA RUFINA, Envigado.',
+    '6. Me comprometo a supervisar al menor durante toda la actividad.',
+    '7. Asumo los riesgos y eximo a LA RUFINA de responsabilidades. Los gastos médicos serán a mi cargo.',
+    '8. Eximo a LRFN FREEDOM CHASERS S.A.S. de responsabilidad por accidentes en sus instalaciones.'
+  ].forEach(function(c) {
+    var lines = doc.splitTextToSize(c, W - mg * 2);
+    doc.text(lines, mg, y); y += lines.length * 4.5;
+  });
+
+  y += 4;
+  doc.line(mg, y, W - mg, y); y += 8;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(44, 26, 14);
+  doc.text('FIRMA DEL ACUDIENTE', mg, y); y += 6;
+
+  if (firmaImg) {
+    try { doc.addImage(firmaImg, 'PNG', mg, y, 80, 25); y += 28; }
+    catch (e) { doc.setFontSize(9); doc.setTextColor(150, 60, 60); doc.text('(No se pudo cargar la imagen de la firma)', mg, y); y += 8; }
+  } else {
+    doc.setFontSize(9); doc.setTextColor(150, 60, 60);
+    doc.text('(Este registro no tiene firma guardada)', mg, y); y += 8;
+  }
+
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(107, 79, 46);
+  doc.text('Firmado digitalmente en Envigado, Antioquia — La Rufina, Vda. El Peñasco', mg, y); y += 5;
+  doc.text('Fecha y hora: ' + r.timestamp, mg, y); y += 5;
+  doc.text('ID registro: ' + r.id, mg, y);
+
+  doc.setFillColor(44, 26, 14);
+  doc.rect(0, 287, W, 10, 'F');
+  doc.setTextColor(212, 176, 138); doc.setFontSize(8);
+  doc.text('La Rufina · juanfer2030.github.io/consentimiento-la-rufina', W / 2, 293, { align: 'center' });
+
+  doc.save('consentimiento_' + (r.nombreMenor || 'rufina').replace(/\s/g, '_') + '_' + r.dia + r.mes + '.pdf');
+}
+
+function descargarUno(i, btn) {
+  var r = filtrados[i];
+  if (!r) return;
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  obtenerFirma(r.tieneFirma ? r.id : null)
+    .then(function(firmaImg) { generarPDF(r, firmaImg); })
+    .catch(function(err) {
+      console.error('Error generando PDF:', err);
+      alert('No se pudo generar el PDF: ' + (err && err.message ? err.message : err));
+    })
+    .then(function() {
+      btn.disabled = false;
+      btn.textContent = '📄 PDF';
+    });
+}
+
+function descargarTodosFiltrados() {
+  if (!filtrados.length) { alert('No hay registros para descargar con este filtro.'); return; }
+  if (!confirm('Se descargarán ' + filtrados.length + ' archivo(s) PDF. ¿Continuar?')) return;
+  var btn = document.getElementById('btn-pdf-todos');
+  btn.disabled = true;
+  var i = 0;
+  function siguiente() {
+    if (i >= filtrados.length) { btn.disabled = false; return; }
+    var r = filtrados[i];
+    obtenerFirma(r.tieneFirma ? r.id : null)
+      .then(function(firmaImg) { generarPDF(r, firmaImg); })
+      .catch(function(err) {
+        console.error('Error generando PDF de ' + r.id + ':', err);
+      })
+      .then(function() {
+        i++;
+        setTimeout(siguiente, 400);
+      });
+  }
+  siguiente();
+}
+</script>
+</body>
+</html>

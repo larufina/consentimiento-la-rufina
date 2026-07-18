@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consentimiento — La Rufina</title>
+<link rel="icon" type="image/png" href="logo/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cafe: #2c1a0e;
+  --cafe2: #4a2f1a;
+  --tierra: #c17f3a;
+  --crema: #fdf8f2;
+  --suave: #f5ede0;
+  --borde: #e0cdb0;
+  --texto: #1e1209;
+  --gris: #6b4f2e;
+  --error: #c0392b;
+  --ok: #4a7c3f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--crema); color: var(--texto); }
+
+.header {
+  background: linear-gradient(135deg, #2c1a0e, #3d2512);
+  color: #fff; padding: 1.5rem; text-align: center;
+  border-bottom: 4px solid var(--tierra);
+}
+.header .nit { font-size: 11px; letter-spacing: 2px; color: #e8c89a; margin-bottom: 0.4rem; }
+.header h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; }
+.header p { font-size: 13px; color: #d4b08a; margin-top: 0.3rem; }
+
+.wrap { max-width: 680px; margin: 0 auto; padding: 1.5rem 1.25rem; }
+
+.sec { background: #fff; border: 1px solid var(--borde); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.25rem; }
+.sec-titulo {
+  font-family: 'Playfair Display', serif; font-size: 1rem;
+  color: var(--cafe); margin-bottom: 1.25rem;
+  padding-bottom: 0.6rem; border-bottom: 1px solid var(--borde);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.num {
+  background: var(--cafe); color: #fff; font-family: 'Inter', sans-serif;
+  font-size: 11px; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.row.uno { grid-template-columns: 1fr; }
+.row.tres { grid-template-columns: 1fr 1fr 1fr; }
+@media(max-width:500px) { .row, .row.tres { grid-template-columns: 1fr; } }
+.campo { display: flex; flex-direction: column; gap: 5px; }
+label { font-size: 12px; font-weight: 500; color: var(--gris); text-transform: uppercase; letter-spacing: 0.5px; }
+input, select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--borde);
+  border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 16px;
+  color: var(--texto); background: var(--suave); outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus { border-color: var(--tierra); background: #fff; }
+
+.tipos { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.tipo {
+  padding: 8px 14px; border: 1px solid var(--borde); border-radius: 6px;
+  background: var(--suave); cursor: pointer; font-size: 13px;
+  font-family: 'Inter', sans-serif; color: var(--gris); transition: all 0.15s;
+}
+.tipo.on { background: var(--cafe); border-color: var(--cafe); color: #fff; }
+
+.clausulas {
+  background: var(--suave); border: 1px solid var(--borde);
+  border-radius: 8px; padding: 1.25rem; max-height: 260px;
+  overflow-y: auto; margin-bottom: 1rem;
+}
+.clausulas p { font-size: 13px; color: #3a2510; line-height: 1.7; margin-bottom: 0.75rem; }
+.clausulas p:last-child { margin-bottom: 0; }
+.clausulas strong { color: var(--cafe); }
+
+.chk { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--borde); }
+.chk:last-child { border-bottom: none; }
+.chk input[type=checkbox] { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--cafe); flex-shrink: 0; cursor: pointer; }
+.chk label { font-size: 13px; font-weight: 400; text-transform: none; letter-spacing: 0; cursor: pointer; line-height: 1.5; }
+
+.firma-wrap { border: 2px dashed var(--tierra); border-radius: 8px; background: #fff; padding: 8px; position: relative; }
+#canvas-firma { display: block; width: 100%; height: 160px; cursor: crosshair; touch-action: none; border-radius: 4px; }
+.firma-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 13px; color: #bbb; pointer-events: none; }
+.firma-btns { display: flex; justify-content: center; margin-top: 0.75rem; }
+.btn-limpiar { padding: 7px 16px; border: 1px solid var(--borde); border-radius: 6px; background: var(--suave); font-size: 13px; font-family: 'Inter', sans-serif; cursor: pointer; color: var(--gris); }
+
+.btn-enviar {
+  width: 100%; padding: 16px; background: var(--cafe); color: #fff;
+  font-family: 'Playfair Display', serif; font-size: 1.1rem;
+  border: none; border-radius: 8px; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s;
+}
+.btn-enviar:hover { background: var(--cafe2); }
+.btn-enviar:disabled { background: #bbb; cursor: not-allowed; }
+.nota { font-size: 12px; color: var(--gris); text-align: center; margin-top: 0.75rem; }
+
+.alerta { display: none; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 14px; }
+.alerta.err { background: #fdf0ef; border: 1px solid #e8b4b0; color: var(--error); }
+.alerta.ok { background: #eafaf1; border: 1px solid #a8ddb8; color: var(--ok); }
+
+.spin { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ACCIONES POST-ENVIO */
+.acciones-post {
+  display: none;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-direction: column;
+}
+.acciones-post.visible { display: flex; }
+.btn-accion {
+  width: 100%; padding: 14px; border: none; border-radius: 8px;
+  font-size: 1rem; font-family: 'Inter', sans-serif;
+  cursor: pointer; font-weight: 500; transition: opacity 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.btn-accion:hover { opacity: 0.9; }
+.btn-pdf { background: #c0392b; color: #fff; }
+.btn-wpp { background: #25D366; color: #fff; }
+.btn-nuevo { background: var(--suave); color: var(--cafe); border: 1px solid var(--borde); }
+
+/* MODAL PDF PREVIEW */
+.modal-overlay { display: none; position: fixed; top:0;left:0;right:0;bottom:0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.visible { display: flex; }
+.modal { background: #fff; border-radius: 10px; padding: 1.5rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+.modal h3 { font-family: 'Playfair Display', serif; color: var(--cafe); margin-bottom: 1rem; }
+.modal-btns { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+.btn-cerrar { padding: 8px 16px; background: var(--suave); border: 1px solid var(--borde); border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="nit">LRFN FREEDOM CHASERS S.A.S. · NIT 901361323-0 · Vda. El Peñasco, Envigado</div>
+  <h1>La Rufina</h1>
+  <p>Consentimiento informado — uso de bicicletas y espacios</p>
+</div>
+
+<!-- FORMULARIO -->
+<div class="wrap">
+  <div id="alerta-err" class="alerta err"></div>
+  <div id="alerta-ok" class="alerta ok">✅ Consentimiento registrado correctamente.</div>
+
+  <div class="sec">
+    <div class="sec-titulo"><span class="num">1</span> Fecha</div>
+    <div class="row tres">
+      <div class="campo"><label>Día *</label><input id="dia" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="15" maxlength="2"></div>
+      <div class="campo"><label>Mes *</label>
+        <select id="mes">
+          <option value="">— Mes —</option>
+          <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option>
+          <option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option>
+          <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+        </select>
+      </div>
+      <div class="campo"><label>Año</label><input id="anio" type="text" inputmode="numeric" pattern="[0-9]*" value="2026" maxlength="4"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-titulo"><span class="num">2</span> Padre / Madre / Acudiente</div>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;margin-bottom:6px;">Calidad *</label>
+      <div class="tipos">
+        <button type="button" class="tipo" onclick="selTipo(this,'calidad')">Padre</button>
+        <button type="button" class="tipo" onclick="selTipo(this,'calidad')">Madre</button>
+        <button type="button" class="tipo" onclick="selTipo(this,'calidad')">Tutor/a</button>
+        <button type="button" class="tipo" onclick="selTipo(this,'calidad')">Acudiente</button>
+      </div>
+      <input type="hidden" id="calidad">
+    </div>
+    <div class="row uno"><div class="campo"><label>Nombre completo *</label><input id="nombre-ac" type="text" placeholder="Nombres y apellidos"></div></div>
+    <div style="margin-bottom:1rem;">
+      <label style="display:block;margin-bottom:6px;">Tipo de documento</label>
+      <div class="tipos">
+        <button type="button" class="tipo on" onclick="selTipo(this,'tipo-doc')">C.C.</button>
+        <button type="button" class="tipo" onclick="selTipo(this,'tipo-doc')">C.E.</button>
+        <button type="button" class="tipo" onclick="selTipo(this,'tipo-doc')">Pasaporte</button>
+        <button type="button" class="tipo" onclick="selTipo(this,'tipo-doc')">PPT</button>
+      </div>
+      <input type="hidden" id="tipo-doc" value="C.C.">
+    </div>
+    <div class="row">
+      <div class="campo"><label>Número de documento *</label><input id="cedula" type="text" placeholder="Número"></div>
+      <div class="campo"><label>Teléfono *</label><input id="telefono" type="tel" placeholder="Celular"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-titulo"><span class="num">3</span> Datos del menor</div>
+    <div class="row uno"><div class="campo"><label>Nombre completo *</label><input id="nombre-m" type="text" placeholder="Nombres y apellidos del menor"></div></div>
+    <div class="row">
+      <div class="campo"><label>Edad</label><input id="edad-m" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Edad"></div>
+      <div class="campo"><label>Fecha de visita</label><input id="fecha-v" type="date"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-titulo"><span class="num">4</span> Términos y declaraciones</div>
+    <div class="clausulas">
+      <p><strong>1.</strong> He sido informado(a) de manera suficiente, clara y comprensible sobre las características de la actividad recreativa de uso de bicicletas y espacios, así como sobre las condiciones físicas requeridas para su práctica segura.</p>
+      <p><strong>2.</strong> Conozco y acepto que el uso de bicicletas eléctricas implica riesgos inherentes, incluyendo posibles accidentes, caídas y lesiones personales.</p>
+      <p><strong>3.</strong> Declaro no presentar ningún tipo de contraindicación médica que me impida o que impida al menor a mi cargo participar en esta actividad recreativa.</p>
+      <p><strong>4.</strong> Me comprometo a cuidar mi integridad física (y la del menor a mi cargo) sin exponerme a riesgos innecesarios, y a no abandonar el área de actividad sin previa autorización del personal encargado.</p>
+      <p><strong>5.</strong> AUTORIZO expresamente a mi hijo(a) / pupilo(a) para que haga uso de las bicicletas y espacios proporcionados dentro del restaurante LA RUFINA, ubicado en la Vda. El Peñasco, Envigado, Antioquia.</p>
+      <p><strong>6.</strong> Me comprometo a supervisar y orientar al menor sobre el uso adecuado y seguro de las bicicletas y los espacios durante toda la actividad.</p>
+      <p><strong>7.</strong> Asumo voluntariamente los riesgos de la actividad y eximo a LA RUFINA y LRFN FREEDOM CHASERS S.A.S. de cualquier daño o perjuicio. En caso de accidente, los gastos médicos serán asumidos por quien suscribe.</p>
+      <p><strong>8.</strong> Eximo a LA RUFINA y LRFN FREEDOM CHASERS S.A.S. de cualquier responsabilidad derivada de accidentes u otras consecuencias de la práctica recreativa en sus instalaciones.</p>
+    </div>
+    <div class="chk"><input type="checkbox" id="c1"><label for="c1">He leído el presente documento en su integridad y comprendo cada uno de sus términos.</label></div>
+    <div class="chk"><input type="checkbox" id="c2"><label for="c2">He sido informado(a) de forma clara sobre los alcances, riesgos y consecuencias.</label></div>
+    <div class="chk"><input type="checkbox" id="c3"><label for="c3">Otorgo este consentimiento de manera libre, espontánea y voluntaria.</label></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-titulo"><span class="num">5</span> Firma del acudiente *</div>
+    <p style="font-size:13px;color:var(--gris);margin-bottom:1rem;">Dibuje su firma con el dedo o el mouse.</p>
+    <div class="firma-wrap">
+      <canvas id="canvas-firma"></canvas>
+      <div class="firma-hint" id="firma-hint">Toque aquí para firmar</div>
+    </div>
+    <div class="firma-btns"><button class="btn-limpiar" onclick="limpiarFirma()">🗑 Limpiar</button></div>
+    <p style="font-size:12px;color:var(--gris);text-align:center;margin-top:0.75rem;border-top:1px solid var(--borde);padding-top:0.75rem;">📍 Envigado, Antioquia — La Rufina, Vda. El Peñasco</p>
+  </div>
+
+  <button class="btn-enviar" id="btn-enviar" onclick="enviar()">Firmar y registrar consentimiento</button>
+  <p class="nota">El registro se guardará de forma segura.</p>
+
+  <!-- Acciones post envío -->
+  <div class="acciones-post" id="acciones-post">
+    <button class="btn-accion btn-pdf" onclick="generarPDF()">📄 Descargar PDF del consentimiento</button>
+    <button class="btn-accion btn-wpp" onclick="compartirWpp()">💬 Compartir por WhatsApp</button>
+    <button class="btn-accion btn-nuevo" onclick="nuevoRegistro()">➕ Nuevo consentimiento</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx2_KMf62ASIeywNQ9ezX6XCMn58D0uaZ_I8Ju9eX7YlUHAp-Q7PbLSjHEx24XbmSU/exec';
+var ultimoReg = null;
+
+var MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function fijarFechaHoy() {
+  var hoy = new Date();
+  document.getElementById('dia').value = hoy.getDate();
+  document.getElementById('mes').value = MESES_ES[hoy.getMonth()];
+  document.getElementById('anio').value = hoy.getFullYear();
+}
+fijarFechaHoy();
+
+function selTipo(btn, grupo) {
+  btn.parentElement.querySelectorAll('.tipo').forEach(function(b) { b.classList.remove('on'); });
+  btn.classList.add('on');
+  document.getElementById(grupo).value = btn.textContent;
+}
+
+// ── FIRMA ─────────────────────────────────────────────────────────
+var canvas = document.getElementById('canvas-firma');
+var ctx = canvas.getContext('2d');
+var firmaVacia = true, drawing = false;
+
+function initCanvas() {
+  var anchoNuevo = canvas.offsetWidth || 600;
+  if (canvas.width === anchoNuevo && canvas.height === 160) return;
+  var previa = !firmaVacia ? canvas.toDataURL('image/png') : null;
+  canvas.width = anchoNuevo;
+  canvas.height = 160;
+  ctx.strokeStyle = '#2c1a0e';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  if (previa) {
+    var img = new Image();
+    img.onload = function() { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+    img.src = previa;
+  }
+}
+if (document.readyState === 'complete') { initCanvas(); } 
+else { window.addEventListener('load', initCanvas); }
+setTimeout(initCanvas, 100);
+window.addEventListener('resize', initCanvas);
+
+function xy(e) {
+  var r = canvas.getBoundingClientRect(), t = e.touches ? e.touches[0] : e;
+  return [(t.clientX - r.left) * canvas.width / r.width, (t.clientY - r.top) * canvas.height / r.height];
+}
+canvas.addEventListener('mousedown', function(e) { drawing=true; firmaVacia=false; var p=xy(e); ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(p[0],p[1]); ctx.stroke(); document.getElementById('firma-hint').style.display='none'; });
+canvas.addEventListener('mousemove', function(e) { if(!drawing)return; var p=xy(e); ctx.lineTo(p[0],p[1]); ctx.stroke(); firmaVacia=false; });
+canvas.addEventListener('mouseup', function() { drawing=false; });
+canvas.addEventListener('mouseleave', function() { drawing=false; });
+canvas.addEventListener('touchstart', function(e) { e.preventDefault(); drawing=true; firmaVacia=false; var p=xy(e); ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(p[0],p[1]); ctx.stroke(); document.getElementById('firma-hint').style.display='none'; }, {passive:false});
+canvas.addEventListener('touchmove', function(e) { e.preventDefault(); if(!drawing)return; var p=xy(e); ctx.lineTo(p[0],p[1]); ctx.stroke(); firmaVacia=false; }, {passive:false});
+canvas.addEventListener('touchend', function() { drawing=false; });
+
+function limpiarFirma() { initCanvas(); firmaVacia=true; document.getElementById('firma-hint').style.display=''; }
+
+// ── ENVIAR ────────────────────────────────────────────────────────
+function enviar() {
+  var err = [];
+  if (!document.getElementById('dia').value.trim()) err.push('Ingresa el día.');
+  if (!document.getElementById('mes').value) err.push('Selecciona el mes.');
+  if (!document.getElementById('calidad').value) err.push('Selecciona la calidad.');
+  if (!document.getElementById('nombre-ac').value.trim()) err.push('Ingresa el nombre del acudiente.');
+  if (!document.getElementById('cedula').value.trim()) err.push('Ingresa el documento.');
+  if (!document.getElementById('telefono').value.trim()) err.push('Ingresa el teléfono.');
+  if (!document.getElementById('nombre-m').value.trim()) err.push('Ingresa el nombre del menor.');
+  if (!document.getElementById('c1').checked || !document.getElementById('c2').checked || !document.getElementById('c3').checked) err.push('Acepta todas las declaraciones.');
+  if (firmaVacia) err.push('Dibuja tu firma.');
+
+  document.getElementById('alerta-err').style.display = 'none';
+  document.getElementById('alerta-ok').style.display = 'none';
+  document.getElementById('acciones-post').classList.remove('visible');
+
+  if (err.length > 0) {
+    document.getElementById('alerta-err').textContent = '⚠️ ' + err[0];
+    document.getElementById('alerta-err').style.display = 'block';
+    document.getElementById('alerta-err').scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  var btn = document.getElementById('btn-enviar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Guardando...';
+
+  ultimoReg = {
+    id: 'RF-' + Date.now(),
+    timestamp: new Date().toLocaleString('es-CO'),
+    dia: document.getElementById('dia').value,
+    mes: document.getElementById('mes').value,
+    anio: document.getElementById('anio').value,
+    calidad: document.getElementById('calidad').value,
+    tipoDoc: document.getElementById('tipo-doc').value,
+    cedula: document.getElementById('cedula').value,
+    nombreAcudiente: document.getElementById('nombre-ac').value,
+    telefono: document.getElementById('telefono').value,
+    nombreMenor: document.getElementById('nombre-m').value,
+    edadMenor: document.getElementById('edad-m').value,
+    fechaVisita: document.getElementById('fecha-v').value,
+    firmaImg: canvas.toDataURL('image/png')
+  };
+
+  fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(ultimoReg) }).catch(function(){});
+
+  setTimeout(function() {
+    btn.disabled = false;
+    btn.textContent = 'Firmar y registrar consentimiento';
+    document.getElementById('alerta-ok').style.display = 'block';
+    document.getElementById('alerta-ok').scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById('acciones-post').classList.add('visible');
+  }, 1000);
+}
+
+// ── PDF ───────────────────────────────────────────────────────────
+function generarPDF(reg) {
+  var r = reg || ultimoReg;
+  if (!r) return;
+  var doc = new window.jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+  var W = 210, mg = 20, y = 20;
+
+  // Encabezado
+  doc.setFillColor(44, 26, 14);
+  doc.rect(0, 0, W, 35, 'F');
+  doc.setTextColor(232, 200, 154);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text('LRFN FREEDOM CHASERS S.A.S. · NIT 901361323-0 · Vda. El Peñasco, Envigado', W/2, 12, {align:'center'});
+  doc.setFontSize(20); doc.setFont('helvetica','bold');
+  doc.setTextColor(255,255,255);
+  doc.text('La Rufina', W/2, 22, {align:'center'});
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.setTextColor(212,176,138);
+  doc.text('Consentimiento informado — uso de bicicletas y espacios', W/2, 30, {align:'center'});
+
+  y = 45;
+  doc.setDrawColor(193, 127, 58);
+  doc.setLineWidth(0.5);
+  doc.line(mg, y, W-mg, y);
+  y += 8;
+
+  // Datos
+  doc.setTextColor(44,26,14); doc.setFontSize(11); doc.setFont('helvetica','bold');
+  doc.text('DATOS DEL ACUDIENTE', mg, y); y += 7;
+  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(30,18,9);
+
+  var campos = [
+    ['Calidad:', r.calidad],
+    ['Nombre:', r.nombreAcudiente],
+    ['Documento:', r.tipoDoc + ' ' + r.cedula],
+    ['Teléfono:', r.telefono],
+    ['Fecha:', r.dia + ' de ' + r.mes + ' de ' + r.anio],
+  ];
+  campos.forEach(function(c) {
+    doc.setFont('helvetica','bold'); doc.text(c[0], mg, y);
+    doc.setFont('helvetica','normal'); doc.text(c[1] || '-', mg+35, y);
+    y += 6;
+  });
+
+  y += 4;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(44,26,14);
+  doc.text('DATOS DEL MENOR', mg, y); y += 7;
+  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(30,18,9);
+  [['Nombre:', r.nombreMenor], ['Edad:', r.edadMenor||'-'], ['Fecha visita:', r.fechaVisita||'-']].forEach(function(c) {
+    doc.setFont('helvetica','bold'); doc.text(c[0], mg, y);
+    doc.setFont('helvetica','normal'); doc.text(c[1]||'-', mg+35, y);
+    y += 6;
+  });
+
+  y += 4;
+  doc.line(mg, y, W-mg, y); y += 6;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(44,26,14);
+  doc.text('CLÁUSULAS DEL CONSENTIMIENTO', mg, y); y += 7;
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(58,37,16);
+  var clausulas = [
+    '1. He sido informado(a) suficientemente sobre las características de la actividad recreativa.',
+    '2. Conozco y acepto los riesgos inherentes al uso de bicicletas eléctricas.',
+    '3. Declaro no tener contraindicaciones médicas para participar en esta actividad.',
+    '4. Me comprometo a no exponerme a riesgos innecesarios durante la actividad.',
+    '5. AUTORIZO al menor a usar bicicletas y espacios dentro de LA RUFINA, Envigado.',
+    '6. Me comprometo a supervisar al menor durante toda la actividad.',
+    '7. Asumo los riesgos y eximo a LA RUFINA de responsabilidades. Los gastos médicos serán a mi cargo.',
+    '8. Eximo a LRFN FREEDOM CHASERS S.A.S. de responsabilidad por accidentes en sus instalaciones.'
+  ];
+  clausulas.forEach(function(c) {
+    var lines = doc.splitTextToSize(c, W - mg*2);
+    doc.text(lines, mg, y); y += lines.length * 4.5;
+  });
+
+  y += 4;
+  doc.line(mg, y, W-mg, y); y += 8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(44,26,14);
+  doc.text('FIRMA DEL ACUDIENTE', mg, y); y += 6;
+
+  if (r.firmaImg) {
+    try { doc.addImage(r.firmaImg, 'PNG', mg, y, 80, 25); } catch(e) {}
+    y += 28;
+  }
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(107,79,46);
+  doc.text('Firmado digitalmente en Envigado, Antioquia — La Rufina, Vda. El Peñasco', mg, y); y += 5;
+  doc.text('Fecha y hora: ' + r.timestamp, mg, y); y += 5;
+  doc.text('ID registro: ' + r.id, mg, y);
+
+  // Pie
+  doc.setFillColor(44, 26, 14);
+  doc.rect(0, 287, W, 10, 'F');
+  doc.setTextColor(212,176,138); doc.setFontSize(8);
+  doc.text('La Rufina · juanfer2030.github.io/consentimiento-la-rufina', W/2, 293, {align:'center'});
+
+  doc.save('consentimiento_' + (r.nombreMenor||'rufina').replace(/\s/g,'_') + '.pdf');
+}
+
+// ── WHATSAPP ──────────────────────────────────────────────────────
+function compartirWpp(reg) {
+  var r = reg || ultimoReg;
+  if (!r) return;
+  var msg = '✅ *Consentimiento La Rufina*\n\n' +
+    '📅 Fecha: ' + r.dia + ' de ' + r.mes + ' de ' + r.anio + '\n' +
+    '👤 Acudiente: ' + r.nombreAcudiente + ' (' + r.calidad + ')\n' +
+    '🪪 Doc: ' + r.tipoDoc + ' ' + r.cedula + '\n' +
+    '📱 Tel: ' + r.telefono + '\n' +
+    '👦 Menor: ' + r.nombreMenor + '\n' +
+    (r.edadMenor ? '🎂 Edad: ' + r.edadMenor + '\n' : '') +
+    (r.fechaVisita ? '📆 Visita: ' + r.fechaVisita + '\n' : '') +
+    '\n_Registrado en La Rufina_';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function nuevoRegistro() {
+  document.getElementById('acciones-post').classList.remove('visible');
+  document.getElementById('alerta-ok').style.display = 'none';
+  resetForm();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resetForm() {
+  ['nombre-ac','cedula','telefono','nombre-m','edad-m'].forEach(function(id) { document.getElementById(id).value=''; });
+  fijarFechaHoy();
+  document.getElementById('calidad').value = '';
+  document.getElementById('tipo-doc').value = 'C.C.';
+  document.querySelectorAll('.tipo').forEach(function(b) { b.classList.remove('on'); });
+  document.querySelector('.tipo').classList.add('on');
+  ['c1','c2','c3'].forEach(function(id) { document.getElementById(id).checked=false; });
+  document.getElementById('fecha-v').value = '';
+  limpiarFirma();
+}
+</script>
+</body>
+</html>
